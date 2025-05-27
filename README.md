@@ -82,7 +82,7 @@ The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expe
 
 Expect:
 
-* `jamsine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
+* `jasmine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
 * `chai`'s BDD set is a chain-style that builds upon itself: `expect(a).to.equal(b)`
 
 Assert:
