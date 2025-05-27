@@ -1,4 +1,4 @@
-# Proposal: Assertions
+# Proposal: Comparisons
 
 Champions:
 * @JakobJingleheimer
