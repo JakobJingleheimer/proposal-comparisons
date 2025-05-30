@@ -87,6 +87,7 @@ The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expe
 * [`expect`](https://jestjs.io/docs/expect)
 * [`jasmine`](https://jasmine.github.io/api/edge/global.html#expect)
 * [`@std/expect`](https://jsr.io/@std/expect) by [deno](https://deno.land/)
+* [`bun:test`](https://bun.sh/reference/bun/test/expect) by [bun](https://bun.sh/), **warning**: we only reference `expect` part not the entire `bun:test` API.
 
 ### Assert style:
 
@@ -129,7 +130,7 @@ The second two are addressed by nature of native inclusion:
 * how much to look up: when everyone is regularly using the same thing, it's top-of-mind so there's no lookup.
 
 Will it be difficult: very.
-<br />
+
 Is it worth doing: yes.
 
 ### Neighbours
