@@ -1,16 +1,18 @@
 # Proposal: Comparisons
 
 Champions:
+
 * @JakobJingleheimer
 
 Authors:
+
 * @JakobJingleheimer
 * @bridgeAR
 
 ## [Stage](https://tc39.github.io/process-document/)
 
 **Current**: 0
-<br />
+
 **Requesting**: 1
 
 ## The Problem(s)
@@ -76,18 +78,21 @@ if (A !== B) throw new Error(`${A} does not equal ${B}`);
 
 There is potentially also an issue of representing multiple problems (such as is possible via Pattern Matching).
 
-## Ecosystem today
+## JS Ecosystem today
 
-The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: `chai` (`20M` weekly), `jasmine` (`1.4M` weekly), `jest` (`29M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
+The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: [`chai`](https://www.npmjs.com/package/chai) (`20M` weekly), [`jasmine`](https://www.npmjs.com/package/jasmine) (`1.4M` weekly), [`expect`](https://jestjs.io/docs/expect) (`36M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
 
-Expect:
+### Expect style:
 
-* `jasmine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
-* `chai`'s BDD set is a chain-style that builds upon itself: `expect(a).to.equal(b)`
+* [`expect`](https://jestjs.io/docs/expect)
+* [`jasmine`](https://jasmine.github.io/api/edge/global.html#expect)
+* [`@std/expect`](https://jsr.io/@std/expect) by [deno](https://deno.land/)
 
-Assert:
+### Assert style:
 
-* `node:assert` and `chai`'s TDD set have large overlap.
+* [`node:assert`](https://nodejs.org/api/assert.html)
+* [`chai`](https://www.chaijs.com/api/assert/)
+* [`@std/assert`](https://jsr.io/@std/assert) by [deno](https://deno.land/)
 
 ### Usage outside of test suites
 
@@ -108,7 +113,7 @@ const expenses = sum(budget, ...form.elements.expenses);
 
 These are then caught and surfaced to the user in a human-friendly message (such as via a "toast").
 
-### TDLR
+### TD;LR
 
 The functionality is **widely** used throughout the ecosystem with almost no variation. Users largely do not care about one verses the other—they care about:
 
@@ -139,8 +144,8 @@ Many major languages natively include a form of assertion. To name a relevant fe
 
 ## Explicitly out of scope
 
-* This is not a test runner (`describe`, `it`, etc).
-* This is not a test utility suite (`mock`, `stub`, etc).
+* This is not a test runner (eg: `describe`, `it`, etc).
+* This is not a test utility suite (eg: `mock`, `stub`, etc).
 
 ## Prior to stage 2
 
