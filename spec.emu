@@ -20,3 +20,19 @@ contributors: Jacob Smith, Ruben Bridgewater
     1. Return ? ToString(_stage_).
   </emu-alg>
 </emu-clause>
+
+<emu-clause id="sec-is-accepted" type="abstract operation">
+  <h1>
+      IsAccepted (
+        _proposal_: an ECMAScript language value
+      ): a Boolean
+  </h1>
+  <dl class="header">
+    <dt>description</dt>
+    <dd>Tells you if the proposal was accepted</dd>
+  </dl>
+  <emu-alg>
+    1. If _proposal_ is not a String, or is not accepted, return *false*.
+    1. Return *true*.
+  </emu-alg>
+</emu-clause>
