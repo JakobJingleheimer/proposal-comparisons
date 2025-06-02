@@ -1,16 +1,18 @@
 # Proposal: Comparisons
 
 Champions:
+
 * @JakobJingleheimer
 
 Authors:
+
 * @JakobJingleheimer
 * @bridgeAR
 
 ## [Stage](https://tc39.github.io/process-document/)
 
 **Current**: 0
-<br />
+
 **Requesting**: 1
 
 ## The Problem(s)
@@ -78,16 +80,21 @@ There is potentially also an issue of representing multiple problems (such as is
 
 ## Ecosystem today
 
-The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: `chai` (`20M` weekly), `jasmine` (`1.4M` weekly), `jest` (`29M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
 
-Expect:
+The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: [`chai`](https://www.npmjs.com/package/chai) (`20M` weekly), [`jasmine`](https://www.npmjs.com/package/jasmine) (`1.4M` weekly), [`expect`](https://jestjs.io/docs/expect) (`36M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~93.4M` weekly (probably significantly higher when `node:assert` numbers are added).
 
-* `jasmine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
-* `chai`'s BDD set is a chain-style that builds upon itself: `expect(a).to.equal(b)`
+### Expect style:
 
-Assert:
+* [`expect`](https://jestjs.io/docs/expect)
+* [`jasmine`](https://jasmine.github.io/api/edge/global.html#expect)
+* [`@std/expect`](https://jsr.io/@std/expect) by [deno](https://deno.land/)
+* [`bun:test`](https://bun.sh/reference/bun/test/expect) by [bun](https://bun.sh/), **warning**: we only reference `expect` part not the entire `bun:test` API.
 
-* `node:assert` and `chai`'s TDD set have large overlap.
+### Assert style:
+
+* [`node:assert`](https://nodejs.org/api/assert.html)
+* [`chai`](https://www.chaijs.com/api/assert/)
+* [`@std/assert`](https://jsr.io/@std/assert) by [deno](https://deno.land/)
 
 ### Usage outside of test suites
 
@@ -124,7 +131,7 @@ The second two are addressed by nature of native inclusion:
 * how much to look up: when everyone is regularly using the same thing, it's top-of-mind so there's no lookup.
 
 Will it be difficult: very.
-<br />
+
 Is it worth doing: yes.
 
 ### Neighbours
@@ -139,8 +146,8 @@ Many major languages natively include a form of assertion. To name a relevant fe
 
 ## Explicitly out of scope
 
-* This is not a test runner (`describe`, `it`, etc).
-* This is not a test utility suite (`mock`, `stub`, etc).
+* This is not a test runner (eg: `describe`, `it`, etc).
+* This is not a test utility suite (eg: `mock`, `stub`, etc).
 
 ## Prior to stage 2
 
