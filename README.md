@@ -78,9 +78,10 @@ if (A !== B) throw new Error(`${A} does not equal ${B}`);
 
 There is potentially also an issue of representing multiple problems (such as is possible via Pattern Matching).
 
-## JS Ecosystem today
+## Ecosystem today
 
-The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: [`chai`](https://www.npmjs.com/package/chai) (`20M` weekly), [`jasmine`](https://www.npmjs.com/package/jasmine) (`1.4M` weekly), [`expect`](https://jestjs.io/docs/expect) (`36M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
+
+The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: [`chai`](https://www.npmjs.com/package/chai) (`20M` weekly), [`jasmine`](https://www.npmjs.com/package/jasmine) (`1.4M` weekly), [`expect`](https://jestjs.io/docs/expect) (`36M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~93.4M` weekly (probably significantly higher when `node:assert` numbers are added).
 
 ### Expect style:
 
@@ -114,7 +115,7 @@ const expenses = sum(budget, ...form.elements.expenses);
 
 These are then caught and surfaced to the user in a human-friendly message (such as via a "toast").
 
-### TD;LR
+### TDLR
 
 The functionality is **widely** used throughout the ecosystem with almost no variation. Users largely do not care about one verses the other—they care about:
 
