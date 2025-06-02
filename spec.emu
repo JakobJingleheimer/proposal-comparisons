@@ -1,12 +1,11 @@
 <!doctype html>
 <meta charset="utf8">
 <link rel="stylesheet" href="./spec.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
-<script src="./spec.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
 <pre class="metadata">
-title: Proposal Title Goes Here
+title: Comparisons
 stage: -1
-contributors: Your Name(s) Here
+contributors: Jacob Smith, Ruben Bridgewater
 </pre>
 
 <emu-clause id="sec-demo-clause">
@@ -19,21 +18,5 @@ contributors: Your Name(s) Here
     1. Else,
       1. Let _stage_ be *-1*<sub>ℤ</sub>.
     1. Return ? ToString(_stage_).
-  </emu-alg>
-</emu-clause>
-
-<emu-clause id="sec-is-accepted" type="abstract operation">
-  <h1>
-      IsAccepted (
-        _proposal_: an ECMAScript language value
-      ): a Boolean
-  </h1>
-  <dl class="header">
-    <dt>description</dt>
-    <dd>Tells you if the proposal was accepted</dd>
-  </dl>
-  <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
-    1. Return *true*.
   </emu-alg>
 </emu-clause>
