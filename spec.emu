@@ -1,12 +1,11 @@
 <!doctype html>
 <meta charset="utf8">
 <link rel="stylesheet" href="./spec.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
-<script src="./spec.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
 <pre class="metadata">
-title: Proposal Title Goes Here
+title: Comparisons
 stage: -1
-contributors: Your Name(s) Here
+contributors: Jacob Smith, Ruben Bridgewater
 </pre>
 
 <emu-clause id="sec-demo-clause">
