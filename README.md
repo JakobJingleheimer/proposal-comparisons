@@ -98,7 +98,7 @@ function compare(
   expected: any,
   actual: any,
   options: CompareOptions,
-): Boolean | Deviations;
+): true | undefined | Deviations;
 ```
 
 A function to deeply compare values. Leafs are compared with [strict equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality).
@@ -122,7 +122,7 @@ type CompareOptions = {
   <dd>How the comparison reports the result</dd>
 
   <dt><em>mode</em> <strong aria-label="default value"><code>fast</code></strong><dt>
-  <dd>Return <code>true</code> when deviation(s) exist or <code>false</code> when no deviation(s) exist. This may be slightly counter-intuitive, but this keeps truthy/falsy consistency with other modes.</dd>
+  <dd>Return <code>true</code> when deviation(s) exist or <code>undefined</code> when no deviation(s) exist.</dd>
 
   <dt><em>mode</em> <code>first</code><dt>
   <dd>Return <code>Deviations</code> with only the first divation.</dd>
@@ -209,6 +209,13 @@ An ES6 `Map` of deviation information:
 </dl>
 
 ### Examples
+
+#### Fast equal
+```js
+compare('a', 'a');
+
+undefined
+```
 
 #### Fast unequal
 ```js
