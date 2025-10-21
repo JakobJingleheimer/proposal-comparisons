@@ -1,27 +1,23 @@
 # Proposal: Comparisons
 
 Champions:
-
-* @JakobJingleheimer
+* [@JakobJingleheimer](https://github.com/JakobJingleheimer)
 
 Authors:
-
-* @JakobJingleheimer
-* @bridgeAR
+* [@JakobJingleheimer](https://github.com/JakobJingleheimer)
+* [@BridgeAR](https://github.com/BridgeAR)
 
 ## [Stage](https://tc39.github.io/process-document/)
 
 **Current**: 0
 
-**Requesting**: 1
+**Requesting**: 2
 
-## The Problem(s)
-
-This proposal may eventually split into 2 different topics:
+## The Problem
 
 ### A vs B
 
-Determining whether B is sufficiently similar (or different) to A.
+Determining whether B is sufficiently dis/similar to A.
 
 Non-objects are straightforward and trivial:
 
@@ -48,14 +44,7 @@ const b = new String('foo');
 
 There is some variation in the ecosystem regarding the nuances of comparing objects.
 
-This may be addressed by the [Pattern Matching proposal](https://github.com/tc39/proposal-pattern-matching).
-
-### Output
-
 Even more important than A vs B is the output: Merely knowing A is unexpected is almost useless when you can't see what A and B are.
-
-<details>
-<summary>examples</summary>
 
 Annoying:
 ```js
@@ -74,27 +63,6 @@ But brittle
 if (A !== B) throw new Error(`${A} does not equal ${B}`);
 // Error: [object Object] does not equal [object Object]
 ```
-</details>
-
-There is potentially also an issue of representing multiple problems (such as is possible via Pattern Matching).
-
-## Ecosystem today
-
-
-The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: [`chai`](https://www.npmjs.com/package/chai) (`20M` weekly), [`jasmine`](https://www.npmjs.com/package/jasmine) (`1.4M` weekly), [`expect`](https://jestjs.io/docs/expect) (`36M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~93.4M` weekly (probably significantly higher when `node:assert` numbers are added).
-
-### Expect style:
-
-* [`expect`](https://jestjs.io/docs/expect)
-* [`jasmine`](https://jasmine.github.io/api/edge/global.html#expect)
-* [`@std/expect`](https://jsr.io/@std/expect) by [deno](https://deno.land/)
-* [`bun:test`](https://bun.sh/reference/bun/test/expect) by [bun](https://bun.sh/), **warning**: we only reference `expect` part not the entire `bun:test` API.
-
-### Assert style:
-
-* [`node:assert`](https://nodejs.org/api/assert.html)
-* [`chai`](https://www.chaijs.com/api/assert/)
-* [`@std/assert`](https://jsr.io/@std/assert) by [deno](https://deno.land/)
 
 ### Usage outside of test suites
 
@@ -115,24 +83,403 @@ const expenses = sum(budget, ...form.elements.expenses);
 
 These are then caught and surfaced to the user in a human-friendly message (such as via a "toast").
 
-### TDLR
 
-The functionality is **widely** used throughout the ecosystem with almost no variation. Users largely do not care about one verses the other—they care about:
+### Explicitly out of scope
 
-* "behaves as expected"
-* convenience
-* how much they have to look up
+* This is not a test runner (`describe`, `it`, etc).
+* This is not a test utility suite (`mock`, `stub`, etc).
 
-The first depends on getting it right. We fortunately have decades of experience from the ecosystem to build upon.
+## Solution
 
-The second two are addressed by nature of native inclusion:
+### Compare
 
-* convenience: it's right there (can't get more convenient).
-* how much to look up: when everyone is regularly using the same thing, it's top-of-mind so there's no lookup.
+```ts
+function compare(
+  expected: any,
+  actual: any,
+  options: CompareOptions,
+): Boolean | Deviations;
+```
 
-Will it be difficult: very.
+A function to deeply compare values. Leafs are compared with [strict equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality).
 
-Is it worth doing: yes.
+### CompareOptions
+
+```ts
+type CompareOptions = {
+  mode:
+    | 'all'
+    | 'fast' // default
+    | 'first'
+  ,
+  prototypes: Boolean, // default: `false`
+  reason: Boolean, // default: `false`
+};
+```
+
+<dl>
+  <dt><em>mode</em></dt>
+  <dd>How the comparison reports the result</dd>
+
+  <dt><em>mode</em> <strong aria-label="default value"><code>fast</code></strong><dt>
+  <dd>Return <code>true</code> when deviation(s) exist or <code>false</code> when no deviation(s) exist. This may be slightly counter-intuitive, but this keeps truthy/falsy consistency with other modes.</dd>
+
+  <dt><em>mode</em> <code>first</code><dt>
+  <dd>Return <code>Deviations</code> with only the first divation.</dd>
+
+  <dt><em>mode</em> <code>all</code><dt>
+  <dd>Return <code>Deviations</code> with all divations.</dd>
+
+  <dt><em>prototypes</em></dt>
+  <dd>Whether to consider prototype when determining differences.</dd>
+
+  <dt><em>prototypes</em> <strong aria-label="default value"><code>false</code></strong><dt>
+  <dd>Do not compare prototypes.</dd>
+
+  <dt><em>prototypes</em> <code>true</code><dt>
+  <dd>Do compare prototypes.</dd>
+
+  <dt><em>reason</em></dt>
+  <dd>(ignored when <code>mode</code> is <code>fast</code>) Whether to include a <code>reason</code> property within <code>Deviations</code>.</dd>
+
+  <dt><em>reason</em> <strong aria-label="default value"><code>false</code></strong><dt>
+  <dd>Do not include <code>reason</code>.</dd>
+
+  <dt><em>reason</em> <code>true</code><dt>
+  <dd>Do include <code>reason</code>.</dd>
+</dl>
+
+### Deviations
+
+```ts
+type Deviations = Map<
+  string, // "foo['bar-qux']['zed']"
+  {
+    actual:
+      | bigint
+      | boolean
+      | null
+      | number
+      | string
+      | symbol
+      | undefined
+    ,
+    expected:
+      | bigint
+      | boolean
+      | null
+      | number
+      | string
+      | symbol
+      | undefined
+    ,
+    reason?:
+      | 'enumerable'
+      | 'equality'
+      | 'instance'
+      | 'missing'
+      | 'type'
+    ,
+  },
+>;
+```
+
+An ES6 `Map` of deviation information:
+
+<dl>
+  <dt><em>key</em></dt>
+  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects#accessing_properties">bracket-notation</a> path like <code>"foo['bar-qux']['zed']"</code>. When comparing non-objects, (eg strings), the path is an empty string <code>""</code>.</dd>
+
+  <dt><em>actual</em></dt>
+  <dd>The leaf value from the <strong>second</strong> argument.</dd>
+
+  <dt><em>expected</em></dt>
+  <dd>The leaf value from the <strong>first</strong> argument.</dd>
+
+  <dt><em>reason</em></dt>
+  <dd>
+    The optional reason the comparison failed to match. When there are multiple reasons, the runtime chooses the most appropriate to cite; for example, when values are loosely but not strictly equal (and <code>equality</code> was set to <code>'strict'</code>), <code>'type'</code> is probably the most appropriate. Note <code>'missing'</code>: this is the difference between <code>[undefined].includes(undefined)</code> (<code>true</code>) and <code>[].includes(undefined)</code> (<code>true</code>): this deviation will be reported as (it could be quite baffling without <code>reason</code>)
+
+    {
+      expected: undefined,
+      actual: undefined,
+      reason?: 'missing',
+    }
+  </dd>
+</dl>
+
+### Examples
+
+#### Fast unequal
+```js
+compare('a', 'b');
+
+true
+```
+
+#### First unequal with reason
+```js
+compare('a', 'b', {
+  mode: 'first',
+  reason: true,
+});
+
+Map(1) {
+  "" => {
+    expected: 'a',
+    actual: 'b',
+    reason: 'equality',
+  },
+}
+```
+
+#### First loosely unequal
+```js
+compare('1', 1, {
+  mode: 'first',
+  reason: true,
+});
+
+Map(1) {
+  "" => {
+    expected: '1',
+    actual: 1,
+    reason: 'type',
+  },
+}
+```
+
+#### First unequal (nested)
+```js
+compare(
+  { foo: 'a', bar: 'c' },
+  { foo: 'b', bar: 'd' },
+  {
+    mode: 'first',
+    reason: true,
+  },
+);
+
+Map(1) { // mode: first
+  "foo" => {
+    expected: 'a',
+    actual: 'b',
+    reason: 'equality',
+  },
+}
+```
+
+#### Object descriptor vs literal
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, value: 'a' } }),
+  { foo: 'a' },
+);
+
+false
+```
+
+#### Getter vs literal
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, get: () => 'a' } }),
+  { foo: 'a' },
+);
+
+false
+```
+
+#### Non-enumerable value
+```js
+compare(
+  Object.create({}, { foo: { enumerable: false, value: 'a' } }),
+  { foo: 'a' },
+  {
+    mode: 'first',
+    reason: true,
+  },
+);
+
+Map(1) {
+  "foo" => {
+    expected: undefined,
+    actual: 'a',
+    reason: 'enumerable',
+  },
+}
+```
+
+#### Non-enumerable getter
+```js
+compare(
+  Object.create({}, { foo: { get() { return 'a' } } }),
+  { foo: 'a' },
+  {
+    mode: 'first',
+    reason: true,
+  },
+);
+
+Map(1) {
+  "foo" => {
+    expected: undefined,
+    actual: 'a',
+    reason: 'enumerable',
+  },
+}
+```
+
+#### Multiple (unequal and type-mismatch red-herring)
+```js
+compare(
+  { foo: 'a', bar: 'c' },
+  { foo: 'b', bar:  2  },
+  {
+    mode: 'all',
+    reason: true,
+  },
+);
+
+Map(2) {
+  "foo" => {
+    expected: 'a',
+    actual: 'c',
+    reason: 'equality',
+  },
+  "bar" => {
+    expected: 'c',
+    actual: 2,
+    reason: 'equality',
+  },
+}
+```
+
+#### Multiple (unequal and missing)
+```js
+compare(
+  { foo: { bar: 'a'           } },
+  { foo: { bar: 'b', qux: 'c' } },
+  {
+    mode: 'all',
+    reason: true,
+  },
+);
+
+Map(2) {
+  "foo['bar']" => {
+    expected: 'a',
+    actual: 'b',
+    reason: 'equality',
+  },
+  "foo['bar']['qux']" => {
+    expected: undefined,
+    actual: 'c',
+    reason: 'missing',
+  },
+}
+```
+
+#### Multiple (unequal and prototype)
+```js
+compare(
+  { foo: 'a', __proto__: null },
+  { foo: 'b' },
+  {
+    mode: 'all',
+    prototypes: true,
+    reason: true,
+  },
+);
+
+Map(2) {
+  "[[Prototype]]" => {
+    expected: null,
+    actual: Object,
+    reason: 'instance',
+  },
+  "foo" => {
+    expected: 'a',
+    actual: 'b',
+    reason: 'equality',
+  },
+}
+```
+
+#### Multiple array items (unequal and missing)
+```js
+compare(
+  ['a', 'b', 'c'     ],
+  ['a', 'b', 'd', 'e'],
+  {
+    mode: 'all',
+    reason: true,
+  },
+);
+
+Map(1) {
+  "2" => {
+    expected: 'c',
+    actual: 'd',
+    reason: 'equality',
+  },
+  "3" => {
+    expected: undefined,
+    actual: 'e',
+    reason: 'missing',
+  },
+}
+```
+
+## Terminology
+
+Reference sample:
+```js
+{
+  foo: {
+    bar: 'a',
+    qux: {
+      zed: 1,
+    },
+  },
+}
+```
+
+<dl>
+  <dt><em>Branch</em></td>
+  <dd>A path from root to tip (inclusive of leaf). <code>foo.bar</code> and <code>foo.qux.zed</code> in the reference sample are branches.</dd>
+
+  <dt><em>Leaf(s)</em></dt>
+  <dd>The end of a branch. <code>bar</code> and <code>zed</code> in the reference sample are leafs because their values do not continue the branch.</dd>
+
+  <dt><em>Value</em></td>
+  <dd>The value of a leaf. <code>'a'</code> and <code>1</code> in the reference sample are values.</dd>
+</dl>
+
+## Sibling proposals
+
+The current proposal is useful on its own and sets a foundation for the following to be addressed subsequently.
+
+The current proposal does not include features likely to attract customisation, so punting these delays the need to determine how customisation will be facilitated.
+
+* [Inspector](https://github.com/tc39/proposal-inspector)
+* [Modes](https://github.com/JakobJingleheimer/proposal-modes)
+
+## Other related proposals
+
+* [Pattern Matching](https://github.com/tc39/proposal-pattern-matching)
+
+## Prior art
+
+The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: `chai` (`20M` weekly), `jasmine` (`1.4M` weekly), `jest` (`29M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
+
+Expect:
+
+* `jasmine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
+* `chai`'s BDD set is a chain-style that builds upon itself: `expect(a).to.equal(b)`
+
+Assert:
+
+* `node:assert` and `chai`'s TDD set have large overlap.
 
 ### Neighbours
 
@@ -143,17 +490,3 @@ Many major languages natively include a form of assertion. To name a relevant fe
 * [`kotlin`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/assert.html)
 * [`python`](https://docs.python.org/3/reference/simple_stmts.html#the-assert-statement)
 * [`rust`](https://doc.rust-lang.org/std/macro.assert.html)
-
-## Explicitly out of scope
-
-* This is not a test runner (eg: `describe`, `it`, etc).
-* This is not a test utility suite (eg: `mock`, `stub`, etc).
-
-## Prior to stage 2
-
-* Investigate (and potentially decide on) `assert` vs `expect` (preliminary investigation suggests `assert`).
-  * Possibly an amalgamation of Pattern Matching.
-* Consider extensibility (public symbols?)
-  * Additional/replacement comparison algorithms
-  * Additional/replacement output handlers
-* Decide on a narrow initial scope (surface-area is enormous: assertions/expectations plus output).
