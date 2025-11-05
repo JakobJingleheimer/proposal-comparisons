@@ -174,10 +174,10 @@ type Deviations = Map<
       | undefined
     ,
     reason?:
-      | 'enumerable'
+      | 'enumerability'
       | 'equality'
-      | 'instance'
       | 'missing'
+      | 'prototype'
       | 'type'
     ,
   },
