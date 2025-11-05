@@ -11,7 +11,7 @@ Authors:
 
 **Current**: 0
 
-**Requesting**: 2
+**Requesting**: 1
 
 ## The Problem
 
@@ -231,7 +231,7 @@ compare('a', 'b', {
   reason: true,
 });
 
-Map(1) {
+Iterator => Iterable(1) {
   "" => {
     expected: 'a',
     actual: 'b',
@@ -247,7 +247,7 @@ compare('1', 1, {
   reason: true,
 });
 
-Map(1) {
+Iterator => Iterable(1) {
   "" => {
     expected: '1',
     actual: 1,
@@ -267,7 +267,7 @@ compare(
   },
 );
 
-Map(1) { // mode: first
+Iterator => Iterable(1) { // mode: first
   "foo" => {
     expected: 'a',
     actual: 'b',
@@ -307,7 +307,7 @@ compare(
   },
 );
 
-Map(1) {
+Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
@@ -327,7 +327,7 @@ compare(
   },
 );
 
-Map(1) {
+Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
@@ -347,7 +347,7 @@ compare(
   },
 );
 
-Map(2) {
+Iterator => Iterable(2) {
   "foo" => {
     expected: 'a',
     actual: 'c',
@@ -372,7 +372,7 @@ compare(
   },
 );
 
-Map(2) {
+Iterator => Iterable(2) {
   "foo['bar']" => {
     expected: 'a',
     actual: 'b',
@@ -398,7 +398,7 @@ compare(
   },
 );
 
-Map(2) {
+Iterator => Iterable(2) {
   "[[Prototype]]" => {
     expected: null,
     actual: Object,
@@ -423,7 +423,7 @@ compare(
   },
 );
 
-Map(1) {
+Iterator => Iterable(1) {
   "2" => {
     expected: 'c',
     actual: 'd',
