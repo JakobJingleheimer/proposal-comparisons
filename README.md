@@ -101,7 +101,7 @@ function compare(
 ): true | undefined | Deviations;
 ```
 
-A function to deeply compare values. Leafs are compared with [strict equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality).
+A function to deeply compare values. Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
 
 ### CompareOptions
 
