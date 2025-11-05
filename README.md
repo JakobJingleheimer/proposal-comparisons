@@ -113,7 +113,6 @@ type CompareOptions = {
     | 'first'
   ,
   prototypes: Boolean, // default: `false`
-  reason: Boolean, // default: `false`
 };
 ```
 
@@ -138,15 +137,6 @@ type CompareOptions = {
 
   <dt><em>prototypes</em> <code>true</code><dt>
   <dd>Do compare prototypes.</dd>
-
-  <dt><em>reason</em></dt>
-  <dd>(ignored when <code>mode</code> is <code>fast</code>) Whether to include a <code>reason</code> property within <code>Deviations</code>.</dd>
-
-  <dt><em>reason</em> <strong aria-label="default value"><code>false</code></strong><dt>
-  <dd>Do not include <code>reason</code>.</dd>
-
-  <dt><em>reason</em> <code>true</code><dt>
-  <dd>Do include <code>reason</code>.</dd>
 </dl>
 
 ### Deviations
@@ -173,13 +163,13 @@ type Deviations = Map<
       | symbol
       | undefined
     ,
-    reason?:
-      | 'enumerability'
-      | 'equality'
-      | 'missing'
-      | 'prototype'
-      | 'type'
-    ,
+    reason: {
+      enumerability: boolean,
+      equality: boolean,
+      missing: boolean,
+      prototype: boolean,
+      type: boolean,
+    },
   },
 >;
 ```
@@ -198,12 +188,12 @@ An ES6 `Map` of deviation information:
 
   <dt><em>reason</em></dt>
   <dd>
-    The optional reason the comparison failed to match. When there are multiple reasons, the runtime chooses the most appropriate to cite; for example, when values are loosely but not strictly equal (and <code>equality</code> was set to <code>'strict'</code>), <code>'type'</code> is probably the most appropriate. Note <code>'missing'</code>: this is the difference between <code>[undefined].includes(undefined)</code> (<code>true</code>) and <code>[].includes(undefined)</code> (<code>true</code>): this deviation will be reported as (it could be quite baffling without <code>reason</code>)
+    The reason(s) comparison failed to match.
 
     {
       expected: undefined,
       actual: undefined,
-      reason?: 'missing',
+      reason: { missing: true, … },
     }
   </dd>
 </dl>
@@ -235,7 +225,7 @@ Iterator => Iterable(1) {
   "" => {
     expected: 'a',
     actual: 'b',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
 }
 ```
@@ -244,14 +234,13 @@ Iterator => Iterable(1) {
 ```js
 compare('1', 1, {
   mode: 'first',
-  reason: true,
 });
 
 Iterator => Iterable(1) {
   "" => {
     expected: '1',
     actual: 1,
-    reason: 'type',
+    reason: { type: true, … },
   },
 }
 ```
@@ -263,7 +252,6 @@ compare(
   { foo: 'b', bar: 'd' },
   {
     mode: 'first',
-    reason: true,
   },
 );
 
@@ -271,7 +259,7 @@ Iterator => Iterable(1) { // mode: first
   "foo" => {
     expected: 'a',
     actual: 'b',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
 }
 ```
@@ -303,7 +291,6 @@ compare(
   { foo: 'a' },
   {
     mode: 'first',
-    reason: true,
   },
 );
 
@@ -311,7 +298,7 @@ Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
-    reason: 'enumerable',
+    reason: { enumerable: true, … },
   },
 }
 ```
@@ -323,7 +310,6 @@ compare(
   { foo: 'a' },
   {
     mode: 'first',
-    reason: true,
   },
 );
 
@@ -331,7 +317,7 @@ Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
-    reason: 'enumerable',
+    reason: { enumerable: true, … },
   },
 }
 ```
@@ -343,7 +329,6 @@ compare(
   { foo: 'b', bar:  2  },
   {
     mode: 'all',
-    reason: true,
   },
 );
 
@@ -351,12 +336,12 @@ Iterator => Iterable(2) {
   "foo" => {
     expected: 'a',
     actual: 'c',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
   "bar" => {
     expected: 'c',
     actual: 2,
-    reason: 'equality',
+    reason: { equality: true, … },
   },
 }
 ```
@@ -368,7 +353,6 @@ compare(
   { foo: { bar: 'b', qux: 'c' } },
   {
     mode: 'all',
-    reason: true,
   },
 );
 
@@ -376,12 +360,12 @@ Iterator => Iterable(2) {
   "foo['bar']" => {
     expected: 'a',
     actual: 'b',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
   "foo['bar']['qux']" => {
     expected: undefined,
     actual: 'c',
-    reason: 'missing',
+    reason: { missing: true, … },
   },
 }
 ```
@@ -394,7 +378,6 @@ compare(
   {
     mode: 'all',
     prototypes: true,
-    reason: true,
   },
 );
 
@@ -402,12 +385,12 @@ Iterator => Iterable(2) {
   "[[Prototype]]" => {
     expected: null,
     actual: Object,
-    reason: 'instance',
+    reason: { instance: true, … },
   },
   "foo" => {
     expected: 'a',
     actual: 'b',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
 }
 ```
@@ -419,7 +402,6 @@ compare(
   ['a', 'b', 'd', 'e'],
   {
     mode: 'all',
-    reason: true,
   },
 );
 
@@ -427,12 +409,12 @@ Iterator => Iterable(1) {
   "2" => {
     expected: 'c',
     actual: 'd',
-    reason: 'equality',
+    reason: { equality: true, … },
   },
   "3" => {
     expected: undefined,
     actual: 'e',
-    reason: 'missing',
+    reason: { missing: true, … },
   },
 }
 ```
