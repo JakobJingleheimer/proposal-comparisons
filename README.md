@@ -20,9 +20,9 @@ Reviewers:
 
 ## The Problem
 
-### A vs B
+Determine how A and B deviate—a very common need that is currently ~half-solved. This issue has 2 parts: (deep) equality and details.
 
-Determining whether B is sufficiently dis/similar to A.
+### Equality (currently)
 
 Non-objects are straightforward and trivial:
 
@@ -49,7 +49,7 @@ const b = new String('foo');
 
 There is some variation in the ecosystem regarding the nuances of comparing objects.
 
-Even more important than A vs B is the output: Merely knowing A is unexpected is almost useless when you can't see what A and B are.
+Even more important than A vs B is the details: Merely knowing B is unexpected is almost useless without knowing specifically _how_ they differ.
 
 Annoying:
 ```js
