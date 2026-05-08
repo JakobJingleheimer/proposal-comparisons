@@ -185,8 +185,8 @@ type CompareOptions = {
   <dt><em>mode</em> <code>first</code><dt>
   <dd>Return <code>Deviations</code> with only the first divation.</dd>
 
-  <dt><em>mode</em> <code>all</code><dt>
-  <dd>Return <code>Deviations</code> with all divations.</dd>
+  <dt><em>mode</em> <code>full</code><dt>
+  <dd>Return an <code>Iterator</code> of <code>Deviations</code> with all deviations (or an empty <code>Iterator</code> when no deviations exist).</dd>
 
   <dt><em>prototypes</em></dt>
   <dd>Whether to consider prototype when determining differences.</dd>
@@ -201,7 +201,7 @@ type CompareOptions = {
 ### Deviations
 
 ```ts
-type Deviations = Map<
+type Deviations = Iterable<
   string, // "foo['bar-qux']['zed']"
   {
     actual:
@@ -233,7 +233,7 @@ type Deviations = Map<
 >;
 ```
 
-An ES6 `Map` of deviation information:
+An `Interator` of deviation information:
 
 <dl>
   <dt><em>key</em></dt>
