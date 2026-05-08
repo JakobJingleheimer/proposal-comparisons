@@ -223,6 +223,7 @@ type Deviations = Iterable<
       equality: boolean,
       missing: boolean,
       prototype?: boolean,
+      reference: boolean,
       type: boolean,
     },
   },
