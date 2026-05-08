@@ -148,7 +148,7 @@ assert.equal(
 * This is not a test runner (`describe`, `it`, etc).
 * This is not a test utility suite (`mock`, `stub`, etc).
 
-## Solution
+## Solution (sketches)
 
 ### Compare
 
