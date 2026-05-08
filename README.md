@@ -170,7 +170,13 @@ type CompareOptions = {
     | 'fast' // (default) return => boolean
     | 'full' // return => Iterator<Deviation>
   ,
-  prototypes: Boolean, // default: `false`
+  reasons?: Partial<{
+    arrayTypes: boolean,      // default: `false`
+    descriptors: boolean,     // default: `false`
+    promise: 'ref' | 'value', // default: `'value'`
+    prototypes: boolean,      // default: `false`
+    weak: 'ref' | 'value',    // default: `'value'`
+  }>,
 };
 ```
 
