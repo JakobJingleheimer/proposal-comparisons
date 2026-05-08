@@ -166,10 +166,9 @@ function compare(
 
 ```ts
 type CompareOptions = {
-  mode:
-    | 'all'
-    | 'fast' // default
-    | 'first'
+  mode?:
+    | 'fast' // (default) return => boolean
+    | 'full' // return => Iterator<Deviation>
   ,
   prototypes: Boolean, // default: `false`
 };
@@ -181,9 +180,6 @@ type CompareOptions = {
 
   <dt><em>mode</em> <strong aria-label="default value"><code>fast</code></strong><dt>
   <dd>Return <code>true</code> when deviation(s) exist or <code>undefined</code> when no deviation(s) exist.</dd>
-
-  <dt><em>mode</em> <code>first</code><dt>
-  <dd>Return <code>Deviations</code> with only the first divation.</dd>
 
   <dt><em>mode</em> <code>full</code><dt>
   <dd>Return an <code>Iterator</code> of <code>Deviations</code> with all deviations (or an empty <code>Iterator</code> when no deviations exist).</dd>
