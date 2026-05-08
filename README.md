@@ -1,14 +1,16 @@
 # Proposal: Comparisons
 
 Champions:
-
-* Jacob Smith [@JakobJingleheimer](https://github.com/JakobJingleheimer)
-* Richard Gibson [@gibson042](https://github.com/gibson042)
+* Jacob Smith ([@JakobJingleheimer](https://github.com/JakobJingleheimer))
+* Richard Gibson ([@gibson042](https://github.com/gibson042))
 
 Authors:
+* Jacob Smith ([@JakobJingleheimer](https://github.com/JakobJingleheimer))
+* Ruben Bridgewater ([@BridgeAR](https://github.com/BridgeAR))
 
-* Jacob Smith [@JakobJingleheimer](https://github.com/JakobJingleheimer)
-* Ruben Bridgewater [@BridgeAR](https://github.com/BridgeAR)
+Reviewers:
+* Jordan Harband ([@ljharb](https://github.com/ljharb))
+* Olivier Flückiger ([@o-](https://github.com/o-))
 
 ## [Stage](https://tc39.github.io/process-document/)
 
