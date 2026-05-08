@@ -69,27 +69,81 @@ if (A !== B) throw new Error(`${A} does not equal ${B}`);
 // Error: [object Object] does not equal [object Object]
 ```
 
-### Usage outside of test suites
+## Use-cases
 
-It is not uncommon to include assertions within code as a means of input checking (especially input coming from an end-user):
+### Production: Delta for HTTP `PATCH`
 
-```js
-function sum(limit, ...inputs) {
-  let total = 0;
-  for (const { valueAsNumber: val } of inputs) total += val;
+Many client-side apps manipulate data, sometimes very large data. That could be via a `<form>`, a text editor, or something else. Since the before and after are known, only the delta is needed (sent via [http `patch`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/PATCH)).
 
-  assert.ok(total <= limit);
+```jsx
+<Form onSubmit={submitPatch}>
 
-  return total;
+function submitPatch(prev, next) {
+  const patch = composeDelta(prev, next);
+
+  fetch(…, {
+    body: JSON.stringify(patch),
+    method: 'PATCH',
+  });
 }
-
-const expenses = sum(budget, ...form.elements.expenses);
 ```
 
-These are then caught and surfaced to the user in a human-friendly message (such as via a "toast").
+### Production: Logging
 
+```js
+log('bad data', compare(initiallyGood, nowBad));
+```
 
-### Explicitly out of scope
+### Production: State management
+
+Such as in React, is often based on derived data that could actually result in no change:
+
+```js
+setState((prev) => ({
+  ...prev,
+  x: x / 2,
+}));
+```
+
+This is currently left up to the user to guard against because it's too difficult and expensive to for the library to check.
+
+React tried to get this before (see [Prior Art → Shallow Equal]).
+
+### Production: Validation
+
+Input from an uncontrolled origin:
+
+```js
+try {
+  assert.is(
+    total += value,
+    NaN,
+  );
+} catch (err) {
+  toast(…);
+}
+```
+
+### Production: Virtual DOM
+
+```jsx
+{items.map(({ id, label }) => (
+  <button onClick={() => remove(id)}>
+    {label}
+  </button>
+))}
+```
+
+### Testing
+
+```js
+assert.equal(
+  { foo: 1         },
+  { foo: 1, bar: 2 },
+);
+```
+
+## Explicitly out of scope
 
 * This is not a test runner (`describe`, `it`, etc).
 * This is not a test utility suite (`mock`, `stub`, etc).
