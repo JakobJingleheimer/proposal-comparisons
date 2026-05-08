@@ -222,7 +222,7 @@ type Deviations = Iterable<
       enumerability: boolean,
       equality: boolean,
       missing: boolean,
-      prototype: boolean,
+      prototype?: boolean,
       type: boolean,
     },
   },
