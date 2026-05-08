@@ -247,13 +247,15 @@ An `Interator` of deviation information:
 
   <dt><em>reason</em></dt>
   <dd>
-    The reason(s) comparison failed to match.
+  The reason(s) comparison failed to match.
 
     {
       expected: undefined,
       actual: undefined,
       reason: { missing: true, … },
     }
+
+  Reason(s) are general to specific, out-most to inner-most: `compare(new Boolean('true'), new Date())` → "type" is the reason for the deviation. Specific order is engine-defined.
   </dd>
 </dl>
 
