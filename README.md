@@ -518,16 +518,18 @@ The current proposal does not include features likely to attract customisation, 
 
 ## Prior art
 
+### Assertions and expectations
+
 The vast majority of ECMAScript engineers use one of 2 forms: `assert` and `expect`. These come from one of ~4 libraries: `chai` (`20M` weekly), `jasmine` (`1.4M` weekly), `jest` (`29M` weekly), `node:assert` (indeterminable). These are direct competitors, so we can assume there is no overlap and the numbers are summable: at least `~51M` weekly (probably significantly higher when `node:assert` numbers are added).
 
-Expect:
+#### Assert
+
+* `node:assert` and `chai`'s TDD set have large overlap.
+
+#### Expect
 
 * `jasmine` and `jest` are (nearly?) identical with dedicated methods: `expect(a).toEqual(b)`
 * `chai`'s BDD set is a chain-style that builds upon itself: `expect(a).to.equal(b)`
-
-Assert:
-
-* `node:assert` and `chai`'s TDD set have large overlap.
 
 ### Neighbours
 
@@ -538,3 +540,9 @@ Many major languages natively include a form of assertion. To name a relevant fe
 * [`kotlin`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/assert.html)
 * [`python`](https://docs.python.org/3/reference/simple_stmts.html#the-assert-statement)
 * [`rust`](https://doc.rust-lang.org/std/macro.assert.html)
+
+### Proposals
+
+* [Array equality](https://github.com/tc39/proposal-array-equality)
+* [Object deep equal](https://github.com/misha98857/proposal-object-deep-equal)
+* [Object shallow equal](https://github.com/sebmarkbage/ecmascript-shallow-equal)
