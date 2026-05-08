@@ -269,26 +269,25 @@ Custom types are handled by HostTypes (to avoid custom comparison).
 
 ### Examples
 
-#### Fast equal
+#### Fast mode: equal
+
 ```js
 compare('a', 'a');
 
 undefined
 ```
 
-#### Fast unequal
+#### Fast mode: unequal
+
 ```js
 compare('a', 'b');
 
 true
 ```
 
-#### First unequal with reason
+#### Full mode: unequal
 ```js
-compare('a', 'b', {
-  mode: 'first',
-  reason: true,
-});
+compare('a', 'b', { mode: 'full' });
 
 Iterator => Iterable(1) {
   "" => {
@@ -299,11 +298,50 @@ Iterator => Iterable(1) {
 }
 ```
 
-#### First loosely unequal
+#### Fast mode: object descriptor vs literal
+
 ```js
-compare('1', 1, {
-  mode: 'first',
-});
+compare(
+  Object.create({}, { foo: { enumerable: true, value: 'a' } }),
+  { foo: 'a' },
+);
+
+false
+```
+
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, value: 'a' } }),
+  { foo: 'a' },
+  { reasons: { descriptor: true } },
+);
+
+true
+```
+
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, get: () => 'a' } }),
+  { foo: 'a' },
+);
+
+false
+```
+
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, get: () => 'a' } }),
+  { foo: 'a' },
+  { reasons: { descriptor: true } },
+);
+
+true
+```
+
+#### Full mode: type unequal
+
+```js
+compare('1', 1, { mode: 'full' });
 
 Iterator => Iterable(1) {
   "" => {
@@ -314,68 +352,29 @@ Iterator => Iterable(1) {
 }
 ```
 
-#### First unequal (nested)
-```js
-compare(
-  { foo: 'a', bar: 'c' },
-  { foo: 'b', bar: 'd' },
-  {
-    mode: 'first',
-  },
-);
+#### Full mode: non-enumerable value
 
-Iterator => Iterable(1) { // mode: first
-  "foo" => {
-    expected: 'a',
-    actual: 'b',
-    reason: { equality: true, … },
-  },
-}
-```
-
-#### Object descriptor vs literal
-```js
-compare(
-  Object.create({}, { foo: { enumerable: true, value: 'a' } }),
-  { foo: 'a' },
-);
-
-false
-```
-
-#### Getter vs literal
-```js
-compare(
-  Object.create({}, { foo: { enumerable: true, get: () => 'a' } }),
-  { foo: 'a' },
-);
-
-false
-```
-
-#### Non-enumerable value
 ```js
 compare(
   Object.create({}, { foo: { enumerable: false, value: 'a' } }),
   { foo: 'a' },
-  {
-    mode: 'first',
-  },
+  { mode: 'full' },
 );
 
 Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
-    reason: { enumerable: true, … },
+    reason: { enumerability: true, … },
   },
 }
 ```
 
-#### Non-enumerable getter
+#### Full mode: non-enumerable getter
+
 ```js
 compare(
-  Object.create({}, { foo: { get() { return 'a' } } }),
+  Object.create({}, { foo: { get: () => 'a' } }),
   { foo: 'a' },
   {
     mode: 'first',
@@ -386,18 +385,19 @@ Iterator => Iterable(1) {
   "foo" => {
     expected: undefined,
     actual: 'a',
-    reason: { enumerable: true, … },
+    reason: { enumerability: true, … },
   },
 }
 ```
 
-#### Multiple (unequal and type-mismatch red-herring)
+#### Full mode: multiple leafs unequal, plus red-herring from type-mismatch
+
 ```js
 compare(
   { foo: 'a', bar: 'c' },
   { foo: 'b', bar:  2  },
   {
-    mode: 'all',
+    mode: 'full',
   },
 );
 
@@ -415,13 +415,14 @@ Iterator => Iterable(2) {
 }
 ```
 
-#### Multiple (unequal and missing)
+#### Full mode: multiple leafs unequal and missing
+
 ```js
 compare(
   { foo: { bar: 'a'           } },
   { foo: { bar: 'b', qux: 'c' } },
   {
-    mode: 'all',
+    mode: 'full',
   },
 );
 
@@ -439,14 +440,14 @@ Iterator => Iterable(2) {
 }
 ```
 
-#### Multiple (unequal and prototype)
+#### Full mode: multiple leafs unequal and prototype
 ```js
 compare(
   { foo: 'a', __proto__: null },
   { foo: 'b' },
   {
-    mode: 'all',
-    prototypes: true,
+    mode: 'full',
+    reasons: { prototypes: true },
   },
 );
 
@@ -454,7 +455,7 @@ Iterator => Iterable(2) {
   "[[Prototype]]" => {
     expected: null,
     actual: Object,
-    reason: { instance: true, … },
+    reason: { prototype: true, … },
   },
   "foo" => {
     expected: 'a',
@@ -464,13 +465,13 @@ Iterator => Iterable(2) {
 }
 ```
 
-#### Multiple array items (unequal and missing)
+#### Full mode: multiple array items unequal and missing
 ```js
 compare(
   ['a', 'b', 'c'     ],
   ['a', 'b', 'd', 'e'],
   {
-    mode: 'all',
+    mode: 'full',
   },
 );
 
