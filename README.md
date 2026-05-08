@@ -152,6 +152,8 @@ assert.equal(
 
 ### Compare
 
+A function to deeply compare values.
+
 ```ts
 function compare(
   expected: any,
@@ -159,8 +161,6 @@ function compare(
   options: CompareOptions,
 ): true | undefined | Deviations;
 ```
-
-A function to deeply compare values. Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
 
 ### CompareOptions
 
@@ -256,6 +256,16 @@ An `Interator` of deviation information:
     }
   </dd>
 </dl>
+
+### Equality
+
+Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
+
+* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.prototype` is enable.
+* `NaN` equals `NaN` (for performance and sanity).
+* Zero (`0`, `-0`, `+0`) equals zero (for now? possibly an option in `CompareOptions` in future).
+
+Custom types are handled by HostTypes (to avoid custom comparison).
 
 ### Examples
 
