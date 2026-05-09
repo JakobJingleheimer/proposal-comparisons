@@ -20,7 +20,7 @@ Reviewers:
 
 ## The Problem
 
-Determine how A and B deviate—a very common need that is currently ~half-solved. This issue has 2 parts: (deep) equality and details.
+Determine how A and B deviate—a very common need that is currently ~quarter-solved (primitives but not non-primitives). This issue has 2 parts: (deep) equality and details.
 
 ### Equality (currently)
 
@@ -159,7 +159,7 @@ function compare(
   expected: any,
   actual: any,
   options: CompareOptions,
-): true | undefined | Deviations;
+): (true | Iterator<Deviation>) | undefined;
 ```
 
 ### CompareOptions
@@ -171,10 +171,10 @@ type CompareOptions = {
     | 'full' // return => Iterator<Deviation>
   ,
   reasons?: Partial<{
-    arrayTypes: boolean,      // default: `false`
+    constructor: boolean,     // default: `false`
     descriptors: boolean,     // default: `false`
     promise: 'ref' | 'value', // default: `'value'`
-    prototypes: boolean,      // default: `false`
+    prototype: boolean,       // default: `false`
     weak: 'ref' | 'value',    // default: `'value'`
   }>,
 };
@@ -184,26 +184,35 @@ type CompareOptions = {
   <dt><em>mode</em></dt>
   <dd>How the comparison reports the result</dd>
 
-  <dt><em>mode</em> <strong aria-label="default value"><code>fast</code></strong><dt>
-  <dd>Return <code>true</code> when deviation(s) exist or <code>undefined</code> when no deviation(s) exist.</dd>
+  <dt><em>mode</em> <strong title="default value"><code>fast</code></strong><dt>
+  <dd>Return <code>true</code> when deviation(s) exist or <code>undefined</code> when no deviation exist.</dd>
 
   <dt><em>mode</em> <code>full</code><dt>
-  <dd>Return an <code>Iterator</code> of <code>Deviations</code> with all deviations (or an empty <code>Iterator</code> when no deviations exist).</dd>
+  <dd>Return an <code>Iterator</code> of <code>Deviations</code> with all deviations, or <code>undefined</code> when no deviation exist.</dd>
 
-  <dt><em>prototypes</em></dt>
-  <dd>Whether to consider prototype when determining differences.</dd>
+  <dt><em>reasons</em></dt>
+  <dd>Whether/how to handle more esoteric cases when determining differences.</dd>
 
-  <dt><em>prototypes</em> <strong aria-label="default value"><code>false</code></strong><dt>
-  <dd>Do not compare prototypes.</dd>
+  <dt><em>reasons.constructor</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
+  <dd>Whether to consider constructor. This affects, amongst others, Box Primitives (<code>new Boolean(true)</code> vs <code>true</code>) and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArrays</a> (<code>new Int8Array([1,2])</code> vs <code>new Uint8Array([1,2])</code>) where differenes are pedantic.</dd>
 
-  <dt><em>prototypes</em> <code>true</code><dt>
-  <dd>Do compare prototypes.</dd>
+  <dt><em>reasons.descriptors</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
+  <dd>Whether to consider property non-enumerability descriptors (configurable, getter vs value, writeable).</dd>
+
+  <dt><em>reasons.promise</em> <strong title="default value"><code>'ref'</code></strong> | <code>'value'</code></dt>
+  <dd>How to determine equality of promises.</dd>
+
+  <dt><em>reasons.prototype</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
+  <dd>Whether to consider prototype.</dd>
+
+  <dt><em>reasons.weak</em> <strong title="default value"><code>'ref'</code></strong> | <code>'value'</code></dt>
+  <dd>How to determine equality of Weak objects (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"><code>WeakMap</code></a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef"><code>WeakRef</code></a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet"><code>WeakSet</code></a>).</dd>
 </dl>
 
 ### Deviations
 
 ```ts
-type Deviations = Iterable<
+type Deviations = Iterator<
   string, // "foo['bar-qux']['zed']"
   {
     actual:
@@ -225,6 +234,8 @@ type Deviations = Iterable<
       | undefined
     ,
     reason: {
+      constructor?: boolean,
+      descriptor?: boolean,
       enumerability: boolean,
       equality: boolean,
       missing: boolean,
@@ -235,8 +246,6 @@ type Deviations = Iterable<
   },
 >;
 ```
-
-An `Interator` of deviation information:
 
 <dl>
   <dt><em>key</em></dt>
@@ -258,7 +267,7 @@ An `Interator` of deviation information:
       reason: { missing: true, … },
     }
 
-  Reason(s) are general to specific, out-most to inner-most: `compare(new Boolean('true'), new Date())` → "type" is the reason for the deviation. Specific order is engine-defined.
+  Reason(s) are general to specific, outter-most to inner-most: `compare(true, new Date())` → "type" is the reason for the deviation. Specific order is engine-defined.
   </dd>
 </dl>
 
@@ -266,7 +275,8 @@ An `Interator` of deviation information:
 
 Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
 
-* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.prototype` is enable.
+* TypedArrays containing the _same values in the same sequence_ are equal, except when `CompareOptions.reasons.constructor` is enable.
+* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.constructor` is enable.
 * `NaN` equals `NaN` (for performance and sanity).
 * Zero (`0`, `-0`, `+0`) equals zero (for now? possibly an option in `CompareOptions` in future).
 
@@ -311,7 +321,7 @@ compare(
   { foo: 'a' },
 );
 
-false
+undefined
 ```
 
 ```js
@@ -330,7 +340,7 @@ compare(
   { foo: 'a' },
 );
 
-false
+undefined
 ```
 
 ```js
@@ -426,9 +436,7 @@ Iterator => Iterable(2) {
 compare(
   { foo: { bar: 'a'           } },
   { foo: { bar: 'b', qux: 'c' } },
-  {
-    mode: 'full',
-  },
+  { mode: 'full' },
 );
 
 Iterator => Iterable(2) {
@@ -452,7 +460,7 @@ compare(
   { foo: 'b' },
   {
     mode: 'full',
-    reasons: { prototypes: true },
+    reasons: { prototype: true },
   },
 );
 
