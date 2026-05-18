@@ -502,31 +502,6 @@ Iterator => Iterable(1) {
 }
 ```
 
-## Terminology
-
-Reference sample:
-```js
-{
-  foo: {
-    bar: 'a',
-    qux: {
-      zed: 1,
-    },
-  },
-}
-```
-
-<dl>
-  <dt><em>Branch</em></td>
-  <dd>A path from root to tip (inclusive of leaf). <code>foo.bar</code> and <code>foo.qux.zed</code> in the reference sample are branches.</dd>
-
-  <dt><em>Leaf(s)</em></dt>
-  <dd>The end of a branch. <code>bar</code> and <code>zed</code> in the reference sample are leafs because their values do not continue the branch.</dd>
-
-  <dt><em>Value</em></td>
-  <dd>The value of a leaf. <code>'a'</code> and <code>1</code> in the reference sample are values.</dd>
-</dl>
-
 ## Sibling proposals
 
 The current proposal is useful on its own and sets a foundation for the following to be addressed subsequently.
