@@ -20,11 +20,11 @@ Reviewers:
 
 ## The Problem
 
-Determine how A and B deviate—a very common need that is currently ~quarter-solved (primitives but not non-primitives). This issue has 2 parts: (deep) equality and details.
+Determine whether and/or how A and B differ from each other—a very common need that is currently solved only for very narrow cases (primitives, and to some extent `JSON.stringify`able data structures). This issue has 2 parts: (deep) equality and details.
 
 ### Equality (currently)
 
-Non-objects are straightforward and trivial:
+Primitives are mostly trivial: `Object.is` provides the strictest comparison (SameValue), and `===` (IsStrictlyEqual) is only slightly looser, failing to differentiate oppositely-signed zeros and failing to equate NaNs.
 
 ```js
  'foo' === 'bar'
@@ -49,7 +49,7 @@ const b = new String('foo');
 
 There is some variation in the ecosystem regarding the nuances of comparing objects.
 
-Even more important than A vs B is the details: Merely knowing B is unexpected is almost useless without knowing specifically _how_ they differ.
+Even more important is the details: Merely knowing that A and B differ is almost useless without knowing specifically _how_ they differ.
 
 Annoying:
 ```js
@@ -96,7 +96,7 @@ log('bad data', compare(initiallyGood, nowBad));
 
 ### Production: State management
 
-Such as in React, is often based on derived data that could actually result in no change:
+In frameworks such as React, state is often based on derived data in which updates don't always include a material change:
 
 ```js
 setState((prev) => ({
@@ -107,7 +107,7 @@ setState((prev) => ({
 
 This is currently left up to the user to guard against because it's too difficult and expensive to for the library to check.
 
-React tried to get this before (see [Prior Art → Shallow Equal]).
+React tried to get this before (see [Prior Art → Shallow Equal](#proposals)).
 
 ### Production: Validation
 
@@ -275,8 +275,8 @@ type Deviations = Iterator<
 
 Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
 
-* TypedArrays containing the _same values in the same sequence_ are equal, except when `CompareOptions.reasons.constructor` is enable.
-* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.constructor` is enable.
+* TypedArrays containing the _same values in the same sequence_ are equal, except when `CompareOptions.reasons.constructor` is enabled.
+* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.constructor` is enabled.
 * `NaN` equals `NaN` (for performance and sanity).
 * Zero (`0`, `-0`, `+0`) equals zero (for now? possibly an option in `CompareOptions` in future).
 
