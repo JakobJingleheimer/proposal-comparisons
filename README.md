@@ -159,97 +159,89 @@ function compare(
   expected: any,
   actual: any,
   options: CompareOptions,
-): (true | Iterator<Deviation>) | undefined;
+): (true | IterableIterator<Deviation>) | undefined;
 ```
 
 ### CompareOptions
 
 ```ts
 type CompareOptions = {
-  mode?:
-    | 'fast' // (default) return => boolean
-    | 'full' // return => Iterator<Deviation>
+  iterate?:
+    | 'none' // (default) return => boolean
+    | 'deviations' // return => IterableIterator<Deviation>
   ,
-  reasons?: Partial<{
-    constructor: boolean,     // default: `false`
-    descriptors: boolean,     // default: `false`
-    promise: 'ref' | 'value', // default: `'value'`
-    prototype: boolean,       // default: `false`
-    weak: 'ref' | 'value',    // default: `'value'`
-  }>,
+  mode?:
+    | 'value'                // (default) limit to the values of enumerable properties
+    | 'descriptor'           // descend from an object to all of its property
+                             // descriptors rather than its enumerable property values
+    | 'descriptor-and-value' // like 'descriptor', but also invoke each getter into a value
+                             // with a path distinct from that of the descriptor
+  ,
+  prototypes?:
+    | 'same-value' // (default) compare the [[Prototype]]s of non-primitive values by SameValue
+    | 'ignore'     // ignore [[Prototype]]
+    | 'recurse'    // structurally compare the [[Prototype]]s of non-primitive values
 };
 ```
 
 <dl>
+  <dt><em>iterate</em></dt>
+  <dd>What the function returns<dl>
+    <dt>"none"</dt>
+    <dd>Return <code>true</code> when there is at least one deviation; <code>undefined</code> otherwise.</dd>
+    <dt>"deviations"</dt>
+    <dd>Return an iterable iterator of Deviations when there is at least one deviation; <code>undefined</code> otherwise.</dd>
+  </dl></dd>
+
   <dt><em>mode</em></dt>
-  <dd>How the comparison reports the result</dd>
+  <dd>What the function returns<dl>
+    <dt>"value"</dt>
+    <dd>Define the children of each non-leaf value as the values of its enumerable own properties.</dd>
+    <dt>"descriptor"</dt>
+    <dd>Define the children of each non-leaf value as the its property descriptors, regardless of enumerability.</dd>
+    <dt>"descriptor-and-value"</dt>
+    <dd>Define the children of each non-leaf value as the its property descriptors, regardless of enumerability, and additionally populate a <code>value</code> property by invoking each <code>get</code> accessor function.</dd>
+  </dl></dd>
 
-  <dt><em>mode</em> <strong title="default value"><code>fast</code></strong><dt>
-  <dd>Return <code>true</code> when deviation(s) exist or <code>undefined</code> when no deviation exist.</dd>
-
-  <dt><em>mode</em> <code>full</code><dt>
-  <dd>Return an <code>Iterator</code> of <code>Deviations</code> with all deviations, or <code>undefined</code> when no deviation exist.</dd>
-
-  <dt><em>reasons</em></dt>
-  <dd>Whether/how to handle more esoteric cases when determining differences.</dd>
-
-  <dt><em>reasons.constructor</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
-  <dd>Whether to consider constructor. This affects, amongst others, Box Primitives (<code>new Boolean(true)</code> vs <code>true</code>) and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArrays</a> (<code>new Int8Array([1,2])</code> vs <code>new Uint8Array([1,2])</code>) where differenes are pedantic.</dd>
-
-  <dt><em>reasons.descriptors</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
-  <dd>Whether to consider property non-enumerability descriptors (configurable, getter vs value, writeable).</dd>
-
-  <dt><em>reasons.promise</em> <strong title="default value"><code>'ref'</code></strong> | <code>'value'</code></dt>
-  <dd>How to determine equality of promises.</dd>
-
-  <dt><em>reasons.prototype</em> <strong title="default value"><code>false</code></strong> | <code>true</code></dt>
-  <dd>Whether to consider prototype.</dd>
-
-  <dt><em>reasons.weak</em> <strong title="default value"><code>'ref'</code></strong> | <code>'value'</code></dt>
-  <dd>How to determine equality of Weak objects (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"><code>WeakMap</code></a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef"><code>WeakRef</code></a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet"><code>WeakSet</code></a>).</dd>
+  <dt><em>prototypes</em></dt>
+  <dd>What to do with the [[Prototype]] of each non-leaf value<dl>
+    <dt>"same-value"</dt>
+    <dd>Treat [[Prototype]] as a leaf, comparing by SameValue.</dd>
+    <dt>"ignore"</dt>
+    <dd>Ignore [[Prototype]].</dd>
+    <dt>"recurse"</dt>
+    <dd>Treat [[Prototype]] as a child node and recurse as with any other.</dd>
+  </dl></dd>
 </dl>
+
+CompareOptions might also be extended to support more esoteric or particularly common configuration:
+* Treat `-0` as equal to `0` (SameValueZero).
+* Require the enumerated order of keys to match.
+* Provide a classifier to mark nodes for leaf comparison (i.e., SameValue), ignoring, or [surrogate] recursion.
+  * This is expected to be relevant for nodes whose value is a function or otherwise contains hidden state (ArrayBuffer, Promise, Map, Set, WeakMap, WeakSet, FinalizationRegistry, WeakRef, etc.).
+* Treat the `constructor` of a non-primitive value as a child for either leaf comparison or recursion, even when ignoring [[Prototype]]
+  * This is expected to be relevant for cross-realm objects, and also for TypedArray instances whose elements have values in the intersection of differing types.
 
 ### Deviations
 
 ```ts
-type Deviations = Iterator<
-  string, // "foo['bar-qux']['zed']"
-  {
-    actual:
-      | bigint
-      | boolean
-      | null
-      | number
-      | string
-      | symbol
-      | undefined
-    ,
-    expected:
-      | bigint
-      | boolean
-      | null
-      | number
-      | string
-      | symbol
-      | undefined
-    ,
-    reason: {
-      constructor?: boolean,
-      descriptor?: boolean,
-      enumerability: boolean,
-      equality: boolean,
-      missing: boolean,
-      prototype?: boolean,
-      reference: boolean,
-      type: boolean,
-    },
-  },
->;
+type Deviation = {
+  path: Array<string | symbol | { special: "descriptor" | "prototype" | "value" }>,
+  actual: unknown,
+  expected: unknown,
+  kind: "extra" | "missing" | "mismatch",
+};
 ```
 
 <dl>
-  <dt><em>key</em></dt>
-  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects#accessing_properties">bracket-notation</a> path like <code>"foo['bar-qux']['zed']"</code>. When comparing non-objects, (eg strings), the path is an empty string <code>""</code>.</dd>
+  <dt><em>path</em></dt>
+  <dd>
+    An array of segments necessary to reach the <code>actual</code> and <code>expected</code> nodes from their respective root.
+    The path for a root itself is an empty array.
+    The path to a property descriptor extends the path of its property by a <code>{ special: "descriptor" }</code> object,
+    the path to a [[Prototype]] extends the path of its node by a <code>{ special: "prototype" }</code> object,
+    and the path to a value returned from a manual getter invocation extends the path of the containing property by a <code>{ special: "value" }</code> object (all distinct from any property key).
+  </dd>
 
   <dt><em>actual</em></dt>
   <dd>The leaf value from the <strong>second</strong> argument.</dd>
@@ -257,26 +249,25 @@ type Deviations = Iterator<
   <dt><em>expected</em></dt>
   <dd>The leaf value from the <strong>first</strong> argument.</dd>
 
-  <dt><em>reason</em></dt>
-  <dd>
-  The reason(s) comparison failed to match.
-
-    {
-      expected: undefined,
-      actual: undefined,
-      reason: { missing: true, … },
-    }
-
-  Reason(s) are general to specific, outter-most to inner-most: `compare(true, new Date())` → "type" is the reason for the deviation. Specific order is engine-defined.
-  </dd>
+  <dt><em>kind</em></dt>
+  <dd><dl>
+    <dt>"extra"</dt>
+    <dd>when the node is present under <code>actual</code> but not <code>expected</code></dd>
+    <dt>"missing"</dt>
+    <dd>when the node is present under <code>expected</code> but not <code>actual</code></dd>
+    <dt>"mismatch"</dt>
+    <dd>when the node is present under both <code>actual</code> and <code>expected</code></dd>
+  </dl></dd>
 </dl>
 
 ### Equality
 
+Non-enumerable properties are ignored unless `mode` is "descriptor" or "descriptor-and-value".
+
 Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
 
-* TypedArrays containing the _same values in the same sequence_ are equal, except when `CompareOptions.reasons.constructor` is enabled.
-* A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.constructor` is enabled.
+* TypedArrays containing the _same values in the same sequence_ are equal, except when not ignoring prototypes.
+* A boxed primitive (eg `new Boolean(true)`) never equals an actual primitive (eg `true`).
 * `NaN` equals `NaN` (for performance and sanity).
 * Zero (`0`, `-0`, `+0`) equals zero (for now? possibly an option in `CompareOptions` in future).
 
@@ -284,7 +275,7 @@ Custom types are handled by HostTypes (to avoid custom comparison).
 
 ### Examples
 
-#### Fast mode: equal
+#### Non-iterated: equal
 
 ```js
 compare('a', 'a');
@@ -292,7 +283,7 @@ compare('a', 'a');
 undefined
 ```
 
-#### Fast mode: unequal
+#### Non-iterated: unequal
 
 ```js
 compare('a', 'b');
@@ -300,20 +291,21 @@ compare('a', 'b');
 true
 ```
 
-#### Full mode: unequal
+#### Iterated: unequal
 ```js
-compare('a', 'b', { mode: 'full' });
+compare('a', 'b', { iterate: 'deviations' });
 
-Iterator => Iterable(1) {
-  "" => {
+Iterator => IterableIterator(1) {
+  {
+    path: [],
     expected: 'a',
     actual: 'b',
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
 }
 ```
 
-#### Fast mode: object descriptor vs literal
+#### Non-iterated: object descriptor vs literal
 
 ```js
 compare(
@@ -353,151 +345,236 @@ compare(
 true
 ```
 
-#### Full mode: type unequal
+#### Iterated: object descriptor vs literal
 
 ```js
-compare('1', 1, { mode: 'full' });
+compare(
+  Object.create({}, { foo: { enumerable: true, value: 'a' } }),
+  { foo: 'a' },
+  { iterate: 'deviations', mode: 'descriptor-and-value' },
+);
 
-Iterator => Iterable(1) {
-  "" => {
+Iterator => IterableIterator(2) {
+  {
+    path: ['a', { special: 'descriptor' }, 'writable'],
+    expected: false,
+    actual: true,
+    kind: 'mismatch',
+  },
+  {
+    path: ['a', { special: 'descriptor' }, 'configurable'],
+    expected: false,
+    actual: true,
+    kind: 'mismatch',
+  },
+}
+```
+
+```js
+compare(
+  Object.create({}, { foo: { enumerable: true, get: () => 'a' } }),
+  { foo: 'a' },
+  { iterate: 'deviations', mode: 'descriptor-and-value' },
+);
+
+Iterator => IterableIterator(4) {
+  {
+    path: ['a', { special: 'descriptor' }, 'get'],
+    expected: <function "get">,
+    actual: undefined,
+    kind: 'missing',
+  },
+  {
+    path: ['a', { special: 'descriptor' }, 'configurable'],
+    expected: false,
+    actual: true,
+    kind: 'mismatch',
+  },
+  {
+    path: ['a', { special: 'descriptor' }, 'value'],
+    expected: undefined,
+    actual: 'a',
+    kind: 'extra',
+  },
+  {
+    path: ['a', { special: 'descriptor' }, 'writable'],
+    expected: undefined,
+    actual: true,
+    kind: 'extra',
+  },
+}
+```
+
+```js
+compare(
+  Object.create({}, { foo: { enumerable: false, configurable: false, get: () => 'a' } }),
+  Object.create({}, { foo: { enumerable: false, configurable: true, get: () => 'b' } }),
+  { iterate: 'deviations', mode: 'descriptor-and-value' },
+);
+
+Iterator => IterableIterator(2) {
+  {
+    path: ['a', { special: 'descriptor' }, 'configurable'],
+    expected: false,
+    actual: true,
+    kind: 'mismatch',
+  },
+  {
+    path: ['a'],
+    expected: 'a',
+    actual: 'b',
+    kind: 'mismatch',
+  },
+}
+```
+
+#### Iterated: type unequal
+
+```js
+compare('1', 1, { iterate: 'deviations' });
+
+Iterator => IterableIterator(1) {
+  {
+    path: [],
     expected: '1',
     actual: 1,
-    reason: { type: true, … },
+    kind: 'mismatch',
   },
 }
 ```
 
-#### Full mode: non-enumerable value
+#### Iterated: non-enumerable value
 
 ```js
 compare(
   Object.create({}, { foo: { enumerable: false, value: 'a' } }),
   { foo: 'a' },
-  { mode: 'full' },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(1) {
-  "foo" => {
+Iterator => IterableIterator(1) {
+  {
+    path: ['foo'],
     expected: undefined,
     actual: 'a',
-    reason: { enumerability: true, … },
+    kind: 'extra',
   },
 }
 ```
 
-#### Full mode: non-enumerable getter
+#### Iterated: non-enumerable getter
 
 ```js
 compare(
   Object.create({}, { foo: { get: () => 'a' } }),
   { foo: 'a' },
-  {
-    mode: 'first',
-  },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(1) {
-  "foo" => {
+Iterator => IterableIterator(1) {
+  {
+    path: ['foo'],
     expected: undefined,
     actual: 'a',
-    reason: { enumerability: true, … },
+    kind: 'extra',
   },
 }
 ```
 
-#### Full mode: multiple leafs unequal, plus red-herring from type-mismatch
+#### Iterated: multiple leafs unequal
 
 ```js
 compare(
   { foo: 'a', bar: 'c' },
   { foo: 'b', bar:  2  },
-  {
-    mode: 'full',
-  },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(2) {
-  "foo" => {
+Iterator => IterableIterator(2) {
+  {
+    path: ['foo'],
     expected: 'a',
     actual: 'c',
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
-  "bar" => {
+  {
+    path: ['bar'],
     expected: 'c',
     actual: 2,
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
 }
 ```
 
-#### Full mode: multiple leafs unequal and missing
+#### Iterated: multiple leafs unequal and missing
 
 ```js
 compare(
   { foo: { bar: 'a'           } },
   { foo: { bar: 'b', qux: 'c' } },
-  { mode: 'full' },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(2) {
-  "foo['bar']" => {
+Iterator => IterableIterator(2) {
+  {
+    path: ['foo', 'bar'],
     expected: 'a',
     actual: 'b',
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
-  "foo['bar']['qux']" => {
+  {
+    path: ['foo', 'qux'],
     expected: undefined,
     actual: 'c',
-    reason: { missing: true, … },
+    kind: 'extra',
   },
 }
 ```
 
-#### Full mode: multiple leafs unequal and prototype
+#### Iterated: multiple leafs unequal and prototype
 ```js
 compare(
   { foo: 'a', __proto__: null },
   { foo: 'b' },
-  {
-    mode: 'full',
-    reasons: { prototype: true },
-  },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(2) {
-  "[[Prototype]]" => {
+Iterator => IterableIterator(2) {
+  {
+    path: [{ special: 'prototype' }],
     expected: null,
-    actual: Object,
-    reason: { prototype: true, … },
+    actual: Object.prototype,
+    kind: 'mismatch',
   },
-  "foo" => {
+  {
+    path: ['foo'],
     expected: 'a',
     actual: 'b',
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
 }
 ```
 
-#### Full mode: multiple array items unequal and missing
+#### Iterated: multiple array items unequal and missing
 ```js
 compare(
   ['a', 'b', 'c'     ],
   ['a', 'b', 'd', 'e'],
-  {
-    mode: 'full',
-  },
+  { iterate: 'deviations' },
 );
 
-Iterator => Iterable(1) {
-  "2" => {
+Iterator => IterableIterator(2) {
+  {
+    path: ['2'],
     expected: 'c',
     actual: 'd',
-    reason: { equality: true, … },
+    kind: 'mismatch',
   },
-  "3" => {
+  {
+    path: ['3'],
     expected: undefined,
     actual: 'e',
-    reason: { missing: true, … },
+    kind: 'extra',
   },
 }
 ```
