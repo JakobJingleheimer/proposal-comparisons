@@ -273,12 +273,10 @@ type Deviations = Iterator<
 
 ### Equality
 
-Leafs are compared with [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero).
+To avoid suppressing potentially relevant differences, primitive values are compared with [SameValue](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevalue) (which does not differentiate any NaN but does differentiate `-0` from `0`/`+0`). This might become configurable via CompareOptions.
 
 * TypedArrays containing the _same values in the same sequence_ are equal, except when `CompareOptions.reasons.constructor` is enabled.
 * A box primitive (eg `new Boolean(true)`) equals its primitive (eg `true`), except when `CompareOptions.reasons.constructor` is enabled.
-* `NaN` equals `NaN` (for performance and sanity).
-* Zero (`0`, `-0`, `+0`) equals zero (for now? possibly an option in `CompareOptions` in future).
 
 Custom types are handled by HostTypes (to avoid custom comparison).
 
