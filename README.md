@@ -8,15 +8,9 @@ Authors:
 * Jacob Smith ([@JakobJingleheimer](https://github.com/JakobJingleheimer))
 * Ruben Bridgewater ([@BridgeAR](https://github.com/BridgeAR))
 
-Reviewers:
-* Jordan Harband ([@ljharb](https://github.com/ljharb))
-* Olivier Flückiger ([@o-](https://github.com/o-))
-
 ## [Stage](https://tc39.github.io/process-document/)
 
-**Current**: 0
-
-**Requesting**: 1
+**Current**: 1
 
 ## The Problem
 
