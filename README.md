@@ -22,6 +22,10 @@ Reviewers:
 
 Determine whether and/or how A and B deviate from each other—a very common need that is currently solved only for very narrow cases (primitives, and to some extent `JSON.stringify`able data structures). This issue has 2 parts: (deep) equality and details.
 
+### Motivation
+
+Walking an object is difficult and not fun; determining equality is difficult, requiring an enormous amount of specific knowledge that the vast majority of users don’t have. These complexities create significant barriers and risks to users.
+
 ### Equality (currently)
 
 Primitives are mostly trivial: `Object.is` provides the strictest comparison (SameValue), and `===` (IsStrictlyEqual) is only slightly looser, failing to differentiate oppositely-signed zeros and failing to equate NaNs.
