@@ -24,6 +24,8 @@ Determine whether and/or how A and B deviate from each other—a very common nee
 
 ### Motivation
 
+Facilitate making decisions about equality users often don't understand.
+
 Walking an object is difficult and not fun; determining equality is difficult, requiring an enormous amount of specific knowledge that the vast majority of users don’t have. These complexities create significant barriers and risks to users.
 
 ### Equality (currently)
