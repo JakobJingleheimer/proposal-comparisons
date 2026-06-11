@@ -213,7 +213,7 @@ type CompareOptions = {
 
 ```ts
 type Deviations = Iterator<
-  string, // "foo['bar-qux']['zed']"
+  (string | Symbol)[], // ['foo', '1', Symbol('zed')]
   {
     actual:
       | bigint
@@ -248,8 +248,8 @@ type Deviations = Iterator<
 ```
 
 <dl>
-  <dt><em>key</em></dt>
-  <dd>A <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects#accessing_properties">bracket-notation</a> path like <code>"foo['bar-qux']['zed']"</code>. When comparing non-objects, (eg strings), the path is an empty string <code>""</code>.</dd>
+  <dt><em>path</em></dt>
+  <dd>An array containing an ordered list (where the first is the outmost and the last is the current) of keys representing the path to the deviation (<code>['foo', 1, Symbol('zed')]</code>). When comparing non-objects, (eg strings), path is an empty array (<code>[]</code>).</dd>
 
   <dt><em>actual</em></dt>
   <dd>The leaf value from the <strong>second</strong> argument.</dd>
@@ -303,7 +303,7 @@ true
 compare('a', 'b', { mode: 'full' });
 
 Iterator => Iterable(1) {
-  "" => {
+  [] => {
     expected: 'a',
     actual: 'b',
     reason: { equality: true, … },
@@ -357,7 +357,7 @@ true
 compare('1', 1, { mode: 'full' });
 
 Iterator => Iterable(1) {
-  "" => {
+  [] => {
     expected: '1',
     actual: 1,
     reason: { type: true, … },
@@ -375,7 +375,7 @@ compare(
 );
 
 Iterator => Iterable(1) {
-  "foo" => {
+  ['foo'] => {
     expected: undefined,
     actual: 'a',
     reason: { enumerability: true, … },
@@ -395,7 +395,7 @@ compare(
 );
 
 Iterator => Iterable(1) {
-  "foo" => {
+  ['foo'] => {
     expected: undefined,
     actual: 'a',
     reason: { enumerability: true, … },
@@ -415,12 +415,12 @@ compare(
 );
 
 Iterator => Iterable(2) {
-  "foo" => {
+  ['foo'] => {
     expected: 'a',
     actual: 'c',
     reason: { equality: true, … },
   },
-  "bar" => {
+  ['bar'] => {
     expected: 'c',
     actual: 2,
     reason: { equality: true, … },
@@ -438,12 +438,12 @@ compare(
 );
 
 Iterator => Iterable(2) {
-  "foo['bar']" => {
+  ['foo', 'bar'] => {
     expected: 'a',
     actual: 'b',
     reason: { equality: true, … },
   },
-  "foo['bar']['qux']" => {
+  ['foo', 'bar', 'qux'] => {
     expected: undefined,
     actual: 'c',
     reason: { missing: true, … },
@@ -463,12 +463,12 @@ compare(
 );
 
 Iterator => Iterable(2) {
-  "[[Prototype]]" => {
+  '[[Prototype]]' => {
     expected: null,
     actual: Object,
     reason: { prototype: true, … },
   },
-  "foo" => {
+  ['foo'] => {
     expected: 'a',
     actual: 'b',
     reason: { equality: true, … },
@@ -487,12 +487,12 @@ compare(
 );
 
 Iterator => Iterable(1) {
-  "2" => {
+  [2] => {
     expected: 'c',
     actual: 'd',
     reason: { equality: true, … },
   },
-  "3" => {
+  [3] => {
     expected: undefined,
     actual: 'e',
     reason: { missing: true, … },
