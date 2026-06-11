@@ -166,6 +166,7 @@ function compare(
 
 ```ts
 type CompareOptions = {
+  filterer?: (a: unknown, b: unknown) => boolean,
   mode?:
     | 'fast' // (default) return => boolean
     | 'full' // return => Iterator<Deviation>
@@ -181,6 +182,9 @@ type CompareOptions = {
 ```
 
 <dl>
+  <dt><em>filterer</em></dt>
+  <dd>When a deviation has been detected, a predicate function to determine whether to include in the <code>Deviations</code> output (return <code>true</code> to include or <code>false</code> to exclude). If all deviations are excluded due to this, the final output will be <code>false</code> instead of an Iterator.</dd>
+
   <dt><em>mode</em></dt>
   <dd>How the comparison reports the result</dd>
 
