@@ -213,7 +213,7 @@ type CompareOptions = {
 
 ```ts
 type Deviations = Iterator<
-  (number | string | Symbol)[], // ['foo', 1, Symbol('zed')]
+  (string | Symbol)[], // ['foo', '1', Symbol('zed')]
   {
     actual:
       | bigint
